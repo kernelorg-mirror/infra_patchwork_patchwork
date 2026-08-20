@@ -268,6 +268,13 @@ MAX_REST_RESULTS_PER_PAGE = 250
 
 MAX_ITEMS_PER_PAGE = 1000
 
+# Set to True to gate the expensive views behind a login. Anonymous users
+# still get the project list, the message ID lookup and a metadata-only view
+# of individual patches, cover letters and series, but not patch listings,
+# message contents or discussion. Useful for instances being scraped hard
+# enough to affect availability.
+GATE_ANONYMOUS_ACCESS = False
+
 # Format string used to build a mailing list archive URL for a message ID
 # that no project in this instance tracks, e.g.
 # 'https://lore.kernel.org/{}'. Projects that *are* tracked use their own

@@ -8,6 +8,8 @@ from django.shortcuts import render
 
 from patchwork.models import Cover
 from patchwork.models import Patch
+from patchwork.views.anonymous import cover_metadata
+from patchwork.views.anonymous import patch_metadata
 
 
 def _default_archive_url(msgid):
@@ -40,38 +42,8 @@ def msgid_lookup(request, msgid):
     """
     db_msgid = Patch.decode_msgid(msgid)
 
-    # None of these need the content, diff or headers: those are large text
-    # fields and we only ever show metadata here.
-    patches = (
-        Patch.objects.filter(msgid=db_msgid)
-        .select_related('project', 'state', 'delegate', 'series')
-        .only(
-            'msgid',
-            'name',
-            'date',
-            'number',
-            'archived',
-            'project__linkname',
-            'project__name',
-            'project__list_archive_url_format',
-            'state__name',
-            'delegate__username',
-            'series__total',
-        )
-    )
-    covers = (
-        Cover.objects.filter(msgid=db_msgid)
-        .select_related('project', 'series')
-        .only(
-            'msgid',
-            'name',
-            'date',
-            'project__linkname',
-            'project__name',
-            'project__list_archive_url_format',
-            'series__total',
-        )
-    )
+    patches = patch_metadata(Patch.objects.filter(msgid=db_msgid))
+    covers = cover_metadata(Cover.objects.filter(msgid=db_msgid))
 
     submissions = [
         {'kind': 'patch', 'submission': patch} for patch in patches
