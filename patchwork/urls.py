@@ -17,6 +17,7 @@ from patchwork.views import bundle as bundle_views
 from patchwork.views import comment as comment_views
 from patchwork.views import cover as cover_views
 from patchwork.views import mail as mail_views
+from patchwork.views import msgid as msgid_views
 from patchwork.views import notification as notification_views
 from patchwork.views import patch as patch_views
 from patchwork.views import project as project_views
@@ -80,6 +81,14 @@ urlpatterns = [
         'patch/<int:patch_id>/',
         patch_views.patch_by_id,
         name='patch-id-redirect',
+    ),
+    # message ID lookup, across all projects
+    # NOTE: msgids can contain slashes, so we accept both the raw form and the
+    # percent-encoded form used elsewhere in patchwork URLs.
+    path(
+        'm/<path:msgid>/',
+        msgid_views.msgid_lookup,
+        name='msgid-lookup',
     ),
     # cover views
     path(
