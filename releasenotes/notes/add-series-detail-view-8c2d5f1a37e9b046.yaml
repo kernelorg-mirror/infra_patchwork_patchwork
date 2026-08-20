@@ -1,0 +1,13 @@
+---
+features:
+  - |
+    Series now have a detail view of their own at ``/series/{seriesID}/``,
+    listing the patches in the series with their state and check results,
+    along with the cover letter and any dependencies.
+upgrade:
+  - |
+    ``Series.get_absolute_url()`` now points at the new series detail view
+    rather than at the patch list filtered by series. The ``web_url`` field of
+    the series REST API endpoint changes accordingly. Dependency hints
+    (``Depends-on:``) that quote the old style of URL are still resolved, so
+    no reparsing is needed.

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% load patch %}
+{% load person %}
+
+{% block title %}{{ series }}{% endblock %}
+
+{% block body %}
+
+<h1>{{ series }}</h1>
+
+<table id="series-meta" class="patch-meta">
+  <tr>
+    <th>Submitter</th>
+    <td>
+{% if gated %}
+      {{ series.submitter.name|default:series.submitter.email }}
+{% else %}
+      {{ series.submitter|personify:project }}
+{% endif %}
+    </td>
+  </tr>
+  <tr>
+    <th>Date</th>
+    <td>{{ series.date }}</td>
+  </tr>
+  <tr>
+    <th>Version</th>
+    <td>{{ series.version }}</td>
+  </tr>
+{% if series.cover_letter %}
+  <tr>
+    <th>Cover letter</th>
+    <td>
+      <a href="{{ series.cover_letter.get_absolute_url }}">{{ series.cover_letter.name }}</a>
+    </td>
+  </tr>
+{% endif %}
+{% if dependencies %}
+  <tr>
+    <th>Depends on</th>
+    <td>
+{% for dependency in dependencies %}
+      <a href="{{ dependency.get_absolute_url }}">{{ dependency }}</a>{% if not forloop.last %},{% endif %}
+{% endfor %}
+    </td>
+  </tr>
+{% endif %}
+{% if not gated %}
+  <tr>
+    <th>Download</th>
+    <td><a href="{{ series.get_mbox_url }}">mbox</a></td>
+  </tr>
+{% endif %}
+</table>
+
+<table id="series-patches" class="table table-hover table-extra-condensed table-striped pw-list">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Patch</th>
+      <th>State</th>
+{% if not gated %}
+      <th><span title="Success / Warning / Fail">S/W/F</span></th>
+{% endif %}
+      <th>Date</th>
+      <th>Submitter</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for patch in patches %}
+    <tr>
+      <td>{{ patch.number }}</td>
+      <td>
+        <a href="{{ patch.get_absolute_url }}">{{ patch.name|default:"[no subject]"|truncatechars:100 }}</a>
+      </td>
+      <td>{{ patch.state.name }}{% if patch.archived %}, archived{% endif %}</td>
+{% if not gated %}
+      <td class="text-nowrap">{{ patch|patch_checks }}</td>
+{% endif %}
+      <td class="text-nowrap">{{ patch.date|date:"Y-m-d" }}</td>
+      <td>
+{% if gated %}
+        {{ patch.submitter.name|default:patch.submitter.email }}
+{% else %}
+        {{ patch.submitter|personify:project }}
+{% endif %}
+      </td>
+    </tr>
+{% empty %}
+    <tr>
+      <td colspan="6">No patches to display</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+
+{% if gated %}
+<div class="alert alert-info">
+  <p>You are viewing a limited version of this page.
+     <a href="{% url 'auth_login' %}?next={{ request.get_full_path|urlencode }}">Log
+     in</a> to see the message contents, test results and downloads.</p>
+</div>
+{% endif %}
+
+{% endblock %}

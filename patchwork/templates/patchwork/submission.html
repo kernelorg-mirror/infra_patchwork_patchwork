@@ -62,7 +62,7 @@
   <tr>
     <th>Series</th>
     <td>
-      <a href="{% url 'patch-list' project_id=project.linkname %}?series={{ submission.series.id }}">
+      <a href="{{ submission.series.get_absolute_url }}">
         {{ submission.series.name }}
       </a> |
       <button id="toggle-patch-series">expand</button>
