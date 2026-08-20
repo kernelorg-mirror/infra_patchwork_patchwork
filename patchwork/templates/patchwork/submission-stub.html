@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}{{ submission.name }}{% endblock %}
+
+{% block body %}
+
+<h1>{{ submission.name }}</h1>
+
+<table id="patch-meta" class="patch-meta">
+  <tr>
+    <th>Message ID</th>
+    <td>
+      {{ submission.url_msgid }}
+{% if submission.list_archive_url %}
+      (<a href="{{ submission.list_archive_url }}">mailing list archive</a>)
+{% endif %}
+    </td>
+  </tr>
+{% if submission.state %}
+  <tr>
+    <th>State</th>
+    <td>{{ submission.state.name }}{% if submission.archived %}, archived{% endif %}</td>
+  </tr>
+{% endif %}
+{% if submission.delegate %}
+  <tr>
+    <th>Delegated to:</th>
+    <td>{{ submission.delegate.username }}</td>
+  </tr>
+{% endif %}
+  <tr>
+    <th>Submitter</th>
+    <td>{{ submission.submitter.name|default:submission.submitter.email }}</td>
+  </tr>
+{% if submission.number and submission.series.total %}
+  <tr>
+    <th>Series</th>
+    <td>{{ submission.number }} of {{ submission.series.total }}</td>
+  </tr>
+{% endif %}
+  <tr>
+    <th>Date</th>
+    <td>{{ submission.date }}</td>
+  </tr>
+</table>
+
+<div class="alert alert-info">
+  <p>You are viewing a limited version of this page.
+     <a href="{% url 'auth_login' %}?next={{ request.get_full_path|urlencode }}">Log
+     in</a> to see the message contents, any comments and test results.</p>
+{% if submission.list_archive_url %}
+  <p>The message itself and any discussion of it are also available, without
+     an account, in
+     <a href="{{ submission.list_archive_url }}">the mailing list archive</a>.</p>
+{% endif %}
+</div>
+
+{% endblock %}
