@@ -5,9 +5,44 @@
 
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 
 from patchwork.models import Series
+from patchwork.views.anonymous import is_gated
+from patchwork.views.anonymous import patch_metadata
 from patchwork.views.utils import series_to_mbox
+
+
+def series_detail(request, series_id):
+    series = get_object_or_404(
+        Series.objects.select_related(
+            'project', 'submitter', 'cover_letter', 'cover_letter__project'
+        ),
+        id=series_id,
+    )
+
+    gated = is_gated(request)
+
+    patches = series.patches.order_by('number')
+    if gated:
+        patches = patch_metadata(patches)
+    else:
+        patches = (
+            patches.select_related('state', 'submitter', 'delegate')
+            .defer('content', 'diff', 'headers')
+            .prefetch_related('check_set')
+        )
+
+    context = {
+        'series': series,
+        'project': series.project,
+        'patches': patches,
+        'gated': gated,
+    }
+    if not gated:
+        context['dependencies'] = series.dependencies.all()
+
+    return render(request, 'patchwork/series.html', context)
 
 
 def series_mbox(request, series_id):

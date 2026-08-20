@@ -9,6 +9,7 @@ import unittest
 import tempfile
 
 from django.test import TestCase
+from django.urls import reverse
 
 from patchwork import models
 from patchwork import parser
@@ -864,6 +865,37 @@ class SeriesDependencyTestCase(SeriesDependencyBase):
         mbox2 = self._load_mbox_template(
             'dependency-one-cover.mbox.template',
             depends_token=f'http://test{series1.get_absolute_url()}',
+        )
+        _, series2_patch1, _ = self._parse_mbox(mbox2)
+        mbox2.close()
+
+        series2 = series2_patch1.series
+
+        self.assertIn(series2, series1.dependents.all())
+        self.assertIn(series1, series2.dependencies.all())
+
+    def test_dependency_by_legacy_series_url(self):
+        """Series URLs used to be a filter on the patch list.
+
+        Mails quoting those URLs are already out there and archives get
+        re-parsed, so they must keep resolving.
+        """
+        mbox1 = self._load_mbox('dependency-base-patch.mbox')
+        _, series1_patch1, _ = self._parse_mbox(mbox1)
+        mbox1.close()
+
+        series1 = series1_patch1.series
+        legacy_url = '%s?series=%d' % (
+            reverse(
+                'patch-list',
+                kwargs={'project_id': series1.project.linkname},
+            ),
+            series1.id,
+        )
+
+        mbox2 = self._load_mbox_template(
+            'dependency-one-cover.mbox.template',
+            depends_token='http://test%s' % legacy_url,
         )
         _, series2_patch1, _ = self._parse_mbox(mbox2)
         mbox2.close()

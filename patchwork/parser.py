@@ -1072,11 +1072,13 @@ def find_series_from_url(url):
         logging.warning('Failed to resolve series or patch URL: %s', url)
         return None
 
-    # TODO: Use the series detail view here.
-    if result.view_name == 'patch-list' and parse_result.query:
-        # Parse the query string.
-        # This can be replaced with something much friendlier once the
-        # series detail view is implemented.
+    if result.view_name == 'series-detail':
+        # This will return None if there are no matches.
+        return Series.objects.filter(id=result.kwargs['series_id']).first()
+    elif result.view_name == 'patch-list' and parse_result.query:
+        # Series URLs used to be a filter on the patch list. Mails quoting
+        # those URLs are already out there, and archives get re-parsed, so
+        # keep resolving them.
         series_query_param = parse_qs(parse_result.query)
 
         if series_id := series_query_param.get('series'):
