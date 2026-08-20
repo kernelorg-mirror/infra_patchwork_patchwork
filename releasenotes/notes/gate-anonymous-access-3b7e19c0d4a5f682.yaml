@@ -1,0 +1,10 @@
+---
+features:
+  - |
+    A new ``GATE_ANONYMOUS_ACCESS`` setting gates the more expensive views
+    behind a login. When it is enabled, anonymous users viewing a patch or
+    cover letter are shown its metadata - state, delegate, submitter and
+    series position - together with a link to the mailing list archive for
+    the message contents and any discussion, rather than the full page. This
+    is intended for instances under enough automated crawling to affect
+    availability. It defaults to ``False``, which leaves all views unchanged.

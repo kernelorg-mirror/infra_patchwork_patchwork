@@ -18,6 +18,9 @@ from patchwork.models import Cover
 from patchwork.models import Patch
 from patchwork.models import Project
 from patchwork.views import generic_list
+from patchwork.views.anonymous import is_gated
+from patchwork.views.anonymous import patch_metadata
+from patchwork.views.anonymous import render_stub
 from patchwork.views import set_bundle
 from patchwork.views.utils import patch_to_mbox
 from patchwork.views.utils import series_patch_to_mbox
@@ -42,9 +45,16 @@ def patch_detail(request, project_id, msgid):
     project = get_object_or_404(Project, linkname=project_id)
     db_msgid = Patch.decode_msgid(msgid)
 
+    gated = is_gated(request)
+
+    patches = Patch.objects.filter(project_id=project.id, msgid=db_msgid)
+    if gated:
+        # keep the large text fields out of a view that cannot render them
+        patches = patch_metadata(patches)
+
     # redirect to cover letters where necessary
     try:
-        patch = Patch.objects.get(project_id=project.id, msgid=db_msgid)
+        patch = patches.get()
     except Patch.DoesNotExist:
         covers = Cover.objects.filter(
             project_id=project.id,
@@ -58,6 +68,9 @@ def patch_detail(request, project_id, msgid):
                 )
             )
         raise Http404('Patch does not exist')
+
+    if gated:
+        return render_stub(request, patch)
 
     editable = patch.is_editable(request.user)
     context = {'project': patch.project}

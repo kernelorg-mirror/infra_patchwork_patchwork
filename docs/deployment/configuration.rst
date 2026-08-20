@@ -105,6 +105,20 @@ Force use of ``https://`` links instead of guessing the scheme based on current
 access. This is useful if SSL protocol is terminated upstream of the server
 (e.g. at the load balancer)
 
+``GATE_ANONYMOUS_ACCESS``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Gate the more expensive views behind a login. When enabled, anonymous users
+viewing a patch or cover letter see its metadata - state, delegate, submitter
+and series position - along with a link to the mailing list archive for the
+message contents and any discussion, instead of the full page. Nothing is
+removed: logging in gives the complete view again.
+
+This is intended for instances that are being crawled hard enough for it to
+affect availability.
+
+.. versionadded:: 3.3
+
 ``MAX_REST_RESULTS_PER_PAGE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
