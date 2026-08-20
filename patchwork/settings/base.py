@@ -266,6 +266,12 @@ ENABLE_REST_API = True
 REST_RESULTS_PER_PAGE = 30
 MAX_REST_RESULTS_PER_PAGE = 250
 
+# Format string used to build a mailing list archive URL for a message ID
+# that no project in this instance tracks, e.g.
+# 'https://lore.kernel.org/{}'. Projects that *are* tracked use their own
+# 'list_archive_url_format' instead. Set to None to omit the link.
+DEFAULT_ARCHIVE_URL_FORMAT = None
+
 # Set to True to enable redirections or URLs from previous versions
 # of patchwork
 COMPAT_REDIR = True

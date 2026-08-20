@@ -60,6 +60,17 @@ The number of days to consider an account confirmation request valid. After
 this interval, the :ref:`cron management command <deployment-final-steps>` will
 delete the request.
 
+``DEFAULT_ARCHIVE_URL_FORMAT``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A format string used to build a mailing list archive URL for a message ID that
+no project in this instance tracks, for example
+``https://lore.kernel.org/{}``. This is used by the message ID lookup view
+(``/m/{msgid}``) when it finds nothing; projects that *are* tracked use their
+own ``list_archive_url_format`` instead. If unset, no link is shown.
+
+.. versionadded:: 3.3
+
 ``DEFAULT_ITEMS_PER_PAGE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

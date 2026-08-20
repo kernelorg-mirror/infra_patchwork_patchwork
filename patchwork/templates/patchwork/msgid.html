@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}{{ msgid }}{% endblock %}
+{% block heading %}Message ID lookup{% endblock %}
+
+{% block body %}
+
+<h1>{{ msgid }}</h1>
+
+{% if submissions %}
+<p>This message is tracked by the following
+   {% if submissions|length > 1 %}projects{% else %}project{% endif %}. The
+   same message is often delivered to more than one list, and each project
+   tracks its own state.</p>
+
+<table class="table table-hover table-extra-condensed table-striped pw-list">
+  <thead>
+    <tr>
+      <th>Project</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>State</th>
+      <th>Delegate</th>
+      <th>Series</th>
+      <th>Date</th>
+      <th>Archive</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for row in submissions %}
+    <tr>
+      <td>{{ row.submission.project.name }}</td>
+      <td>
+        <a href="{{ row.submission.get_absolute_url }}">{{ row.submission.name }}</a>
+      </td>
+      <td>{{ row.kind }}</td>
+      <td>
+{% if row.submission.state %}
+        {{ row.submission.state.name }}{% if row.submission.archived %}, archived{% endif %}
+{% else %}
+        &mdash;
+{% endif %}
+      </td>
+      <td>
+{% if row.submission.delegate %}
+        {{ row.submission.delegate.username }}
+{% else %}
+        &mdash;
+{% endif %}
+      </td>
+      <td>
+{% if row.submission.number and row.submission.series.total %}
+        {{ row.submission.number }} of {{ row.submission.series.total }}
+{% else %}
+        &mdash;
+{% endif %}
+      </td>
+      <td>{{ row.submission.date }}</td>
+      <td>
+{% if row.submission.list_archive_url %}
+        <a href="{{ row.submission.list_archive_url }}">mailing list archive</a>
+{% else %}
+        &mdash;
+{% endif %}
+      </td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>This message ID is not tracked by Patchwork. Not every mailing list is
+   tracked here, and messages that are not patches or cover letters are not
+   indexed by message ID.</p>
+{% if archive_url %}
+<p>You may still be able to find it in
+   <a href="{{ archive_url }}">the mailing list archive</a>.</p>
+{% endif %}
+{% endif %}
+
+{% endblock %}
