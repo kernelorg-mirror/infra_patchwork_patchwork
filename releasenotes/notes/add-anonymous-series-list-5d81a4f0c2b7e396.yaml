@@ -1,0 +1,22 @@
+---
+features:
+  - |
+    When ``GATE_ANONYMOUS_ACCESS`` is enabled, the project patch list served
+    to anonymous users is replaced by a listing of the most recently updated
+    series that still need action. The listing takes two bounded queries
+    regardless of how large the project is, has no filtering, ordering or
+    pagination, and is cached, so each project costs at most one render per
+    ``ANONYMOUS_LIST_CACHE_TIMEOUT``. Series whose patches are not all in the
+    same state are shown as "Mixed" and link to the series itself for the
+    per-patch detail.
+  - |
+    Two new settings, ``ANONYMOUS_LIST_MAX_SERIES`` and
+    ``ANONYMOUS_LIST_CACHE_TIMEOUT``, control the size and freshness of that
+    listing.
+upgrade:
+  - |
+    Instances enabling ``GATE_ANONYMOUS_ACCESS`` should configure ``CACHES``
+    with a shared backend, such as Memcached or Redis. The default
+    per-process backend still works, but each worker caches the anonymous
+    series listing separately, so recently updated series appear and
+    disappear depending on which worker answers.

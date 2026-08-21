@@ -21,6 +21,7 @@ from patchwork.views import generic_list
 from patchwork.views.anonymous import is_gated
 from patchwork.views.anonymous import patch_metadata
 from patchwork.views.anonymous import render_stub
+from patchwork.views.anonymous import series_list
 from patchwork.views import set_bundle
 from patchwork.views.utils import patch_to_mbox
 from patchwork.views.utils import series_patch_to_mbox
@@ -28,6 +29,10 @@ from patchwork.views.utils import series_patch_to_mbox
 
 def patch_list(request, project_id):
     project = get_object_or_404(Project, linkname=project_id)
+
+    if is_gated(request):
+        return series_list(request, project)
+
     context = generic_list(
         request,
         project,
