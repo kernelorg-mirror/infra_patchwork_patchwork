@@ -124,6 +124,8 @@ Force use of ``https://`` links instead of guessing the scheme based on current
 access. This is useful if SSL protocol is terminated upstream of the server
 (e.g. at the load balancer)
 
+.. _gate-anonymous-access:
+
 ``GATE_ANONYMOUS_ACCESS``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -166,7 +168,8 @@ affect availability.
    a cookie, but that reading the login state does mark them ``Vary:
    Cookie``. Stripping the request's ``Cookie`` header for anonymous traffic
    - which such a proxy has to do anyway before it will cache anything -
-   collapses that back to a single cached object per URL.
+   collapses that back to a single cached object per URL. See
+   :doc:`varnish` for a minimal configuration and its gotchas.
 
 __ https://docs.djangoproject.com/en/stable/topics/cache/
 
