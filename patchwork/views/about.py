@@ -5,11 +5,13 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_not_required
 from django.http import HttpResponsePermanentRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
 
+@login_not_required
 def about(request):
     context = {
         'enabled_apis': {
@@ -22,6 +24,7 @@ def about(request):
     return render(request, 'patchwork/about.html', context)
 
 
+@login_not_required
 def redirect(request):
     """Redirect for legacy URLs.
 

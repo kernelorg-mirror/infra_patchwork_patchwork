@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+from django.contrib.auth.decorators import login_not_required
 from django.http import Http404
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
@@ -19,6 +20,7 @@ from patchwork.views.anonymous import render_stub
 from patchwork.views.utils import cover_to_mbox
 
 
+@login_not_required
 def cover_detail(request, project_id, msgid):
     project = get_object_or_404(Project, linkname=project_id)
     db_msgid = '<%s>' % msgid

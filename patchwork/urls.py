@@ -6,6 +6,7 @@
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_not_required
 from django.urls import include
 from django.urls import path
 from django.urls import re_path
@@ -139,40 +140,48 @@ urlpatterns = [
     # password change
     path(
         'user/password-change/',
-        auth_views.PasswordChangeView.as_view(),
+        login_not_required(auth_views.PasswordChangeView.as_view()),
         name='password_change',
     ),
     path(
         'user/password-change/done/',
-        auth_views.PasswordChangeDoneView.as_view(),
+        login_not_required(auth_views.PasswordChangeDoneView.as_view()),
         name='password_change_done',
     ),
     path(
         'user/password-reset/',
-        auth_views.PasswordResetView.as_view(),
+        login_not_required(auth_views.PasswordResetView.as_view()),
         name='password_reset',
     ),
     path(
         'user/password-reset/mail-sent/',
-        auth_views.PasswordResetDoneView.as_view(),
+        login_not_required(auth_views.PasswordResetDoneView.as_view()),
         name='password_reset_done',
     ),
     path(
         'user/password-reset/<uidb64>/<token>/',
-        auth_views.PasswordResetConfirmView.as_view(
-            success_url=reverse_lazy('auth_login'),
+        login_not_required(
+            auth_views.PasswordResetConfirmView.as_view(
+                success_url=reverse_lazy('auth_login'),
+            )
         ),
         name='password_reset_confirm',
     ),
     # login/logout
     path(
         'user/login/',
-        auth_views.LoginView.as_view(template_name='patchwork/login.html'),
+        login_not_required(
+            auth_views.LoginView.as_view(template_name='patchwork/login.html')
+        ),
         name='auth_login',
     ),
     path(
         'user/logout/',
-        auth_views.LogoutView.as_view(next_page=reverse_lazy('project-list')),
+        login_not_required(
+            auth_views.LogoutView.as_view(
+                next_page=reverse_lazy('project-list')
+            )
+        ),
         name='auth_logout',
     ),
     # registration

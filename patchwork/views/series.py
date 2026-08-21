@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+from django.contrib.auth.decorators import login_not_required
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
@@ -13,6 +14,7 @@ from patchwork.views.anonymous import patch_metadata
 from patchwork.views.utils import series_to_mbox
 
 
+@login_not_required
 def series_detail(request, series_id):
     series = get_object_or_404(
         Series.objects.select_related(

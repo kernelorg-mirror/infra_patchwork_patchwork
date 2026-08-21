@@ -138,6 +138,18 @@ series that still need action, which is a single cached page per project
 rather than an unbounded number of filter, sort and pagination combinations.
 See ``ANONYMOUS_LIST_MAX_SERIES`` and ``ANONYMOUS_LIST_CACHE_TIMEOUT``.
 
+Everything else - bundles, comment permalinks, the old ``/patch/<id>/`` and
+``/cover/<id>/`` redirects, the submitter and delegate autocompletes - is
+gated behind a login redirect, since none of them need to stay reachable for
+patch submitters without accounts. Account management (login, logout,
+password reset, registration, mail unsubscribe confirmations) and the
+message ID lookup used by ``git send-email`` reply links stay reachable
+either way, since they are how someone without an account gets in or gets
+looked after. The REST API and the ``pwclient`` XML-RPC endpoint are not
+affected by this setting; they authenticate per request rather than via a
+session cookie, and are expected to get their own access controls
+separately.
+
 This is intended for instances that are being crawled hard enough for it to
 affect availability.
 

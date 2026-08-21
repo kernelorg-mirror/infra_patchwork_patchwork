@@ -8,6 +8,7 @@ from xmlrpc.server import XMLRPCDocGenerator
 import sys
 
 from django.contrib.auth import authenticate
+from django.contrib.auth.decorators import login_not_required
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.http import HttpResponseServerError
@@ -114,6 +115,7 @@ dispatcher = PatchworkXMLRPCDispatcher()
 
 
 @csrf_exempt
+@login_not_required
 def xmlrpc(request):
     if request.method not in ['POST', 'GET']:
         return HttpResponseRedirect(reverse('project-list'))
