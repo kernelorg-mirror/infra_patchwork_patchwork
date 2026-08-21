@@ -12,5 +12,6 @@ you could deploy your own Patchwork instances for production use.
 
    /deployment/installation
    /deployment/configuration
+   /deployment/varnish
    /deployment/management
    /deployment/upgrading
