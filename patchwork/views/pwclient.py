@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -11,6 +12,7 @@ from django.urls import reverse_lazy
 from patchwork.models import Project
 
 
+@login_not_required
 def pwclientrc(request, project_id):
     project = get_object_or_404(Project, linkname=project_id)
 

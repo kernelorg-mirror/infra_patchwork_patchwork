@@ -6,6 +6,7 @@
 import smtplib
 
 from django.contrib import auth
+from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.decorators import login_required
 from django.contrib.sites.models import Site
 from django.conf import settings
@@ -29,6 +30,7 @@ from patchwork.views import generic_list
 from patchwork.views import utils
 
 
+@login_not_required
 def register(request):
     context = {}
 

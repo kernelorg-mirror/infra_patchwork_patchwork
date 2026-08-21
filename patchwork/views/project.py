@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_not_required
 from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -14,6 +15,7 @@ from patchwork.models import Patch
 from patchwork.models import Project
 
 
+@login_not_required
 def project_list(request):
     projects = Project.objects.all()
 
