@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 from django.conf import settings
+from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import render
 
 from patchwork.models import Cover
@@ -25,6 +26,7 @@ def _default_archive_url(msgid):
     return settings.DEFAULT_ARCHIVE_URL_FORMAT.format(msgid)
 
 
+@login_not_required
 def msgid_lookup(request, msgid):
     """Look a message ID up across every project.
 

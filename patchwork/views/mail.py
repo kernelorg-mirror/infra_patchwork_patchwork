@@ -6,6 +6,7 @@
 import smtplib
 
 from django.conf import settings as conf_settings
+from django.contrib.auth.decorators import login_not_required
 from django.core.mail import send_mail
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -17,6 +18,7 @@ from patchwork.models import EmailConfirmation
 from patchwork.models import EmailOptout
 
 
+@login_not_required
 def settings(request):
     if request.method == 'POST':
         form = EmailForm(data=request.POST)
@@ -116,9 +118,11 @@ def _optinout(request, action):
     return render(request, html_template, context)
 
 
+@login_not_required
 def optout(request):
     return _optinout(request, 'optout')
 
 
+@login_not_required
 def optin(request):
     return _optinout(request, 'optin')

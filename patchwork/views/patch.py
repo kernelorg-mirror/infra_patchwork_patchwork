@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_not_required
 from django.http import Http404
 from django.http import HttpResponse
 from django.http import HttpResponseForbidden
@@ -27,6 +28,7 @@ from patchwork.views.utils import patch_to_mbox
 from patchwork.views.utils import series_patch_to_mbox
 
 
+@login_not_required
 def patch_list(request, project_id):
     project = get_object_or_404(Project, linkname=project_id)
 
@@ -46,6 +48,7 @@ def patch_list(request, project_id):
     return render(request, 'patchwork/list.html', context)
 
 
+@login_not_required
 def patch_detail(request, project_id, msgid):
     project = get_object_or_404(Project, linkname=project_id)
     db_msgid = Patch.decode_msgid(msgid)

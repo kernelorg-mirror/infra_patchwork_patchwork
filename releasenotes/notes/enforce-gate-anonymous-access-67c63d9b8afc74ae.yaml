@@ -1,0 +1,13 @@
+---
+features:
+  - |
+    ``GATE_ANONYMOUS_ACCESS`` now actually enforces a login redirect on the
+    views it does not otherwise restrict, such as bundles, comment
+    permalinks, the legacy ``/patch/<id>/`` and ``/cover/<id>/`` redirects,
+    and the submitter/delegate autocompletes. The patch, cover, series and
+    project views it already tailors for anonymous users, along with account
+    management (login, logout, password reset, registration, mail
+    unsubscribe confirmations) and the message ID lookup, stay reachable
+    without a login regardless of the setting. The REST API and the
+    ``pwclient`` XML-RPC endpoint are unaffected, since they authenticate
+    per request rather than via a session cookie.

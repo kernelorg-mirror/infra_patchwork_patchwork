@@ -4,6 +4,7 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+from django.contrib.auth.decorators import login_not_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
@@ -13,6 +14,7 @@ from patchwork.views import mail
 from patchwork.views import user
 
 
+@login_not_required
 def confirm(request, key):
     views = {
         'userperson': user.link_confirm,
