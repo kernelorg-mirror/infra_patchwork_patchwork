@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }}{% endblock %}
+{% block patch_active %}active{% endblock %}
+
+{% block body %}
+
+<h1>{{ project.name }}</h1>
+
+<div class="alert alert-info">
+  <p>You are seeing a limited view of this project: the
+  {{ max_series }} most recently updated series that still need action.
+  This page is generated at most every {{ staleness }} minutes, so it may be
+  slightly out of date.</p>
+  <p><a href="{% url 'auth_login' %}?next={{ request.get_full_path|urlencode }}">Log
+  in</a> for the full list of patches, along with filtering, searching and
+  bundles. If you already know the Message-ID of a patch you are looking
+  for, you can go straight to it at
+  <code>/m/&lt;message-id&gt;/</code>.</p>
+</div>
+
+{% if rows %}
+<table class="table table-hover table-extra-condensed table-striped pw-list">
+  <thead>
+    <tr>
+      <th>Series</th>
+      <th>Patches</th>
+      <th>State</th>
+      <th>Submitter</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for row in rows %}
+    <tr>
+      <td><a href="{{ row.series.get_absolute_url }}">{{ row.series.name|default:"[no subject]" }}</a></td>
+      <td>{{ row.received }}{% if row.series.total %} of {{ row.series.total }}{% endif %}</td>
+      <td>
+{% if row.state %}
+        {{ row.state }}
+{% else %}
+        <a href="{{ row.series.get_absolute_url }}"
+           title="The patches in this series are in different states">Mixed</a>
+{% endif %}
+      </td>
+      <td>{{ row.series.submitter.name|default:row.series.submitter.email }}</td>
+      <td>{{ row.series.date|date:"Y-m-d" }}</td>
+    </tr>
+{% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p>There are no series awaiting action in this project.</p>
+{% endif %}
+
+{% endblock %}

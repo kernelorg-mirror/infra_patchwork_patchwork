@@ -48,6 +48,25 @@ If True, the details in `ADMINS`__ will be hidden from the *About* page
 
 __ https://docs.djangoproject.com/en/2.2/ref/settings/#admins
 
+``ANONYMOUS_LIST_CACHE_TIMEOUT``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+How long, in seconds, to cache the limited series listing shown to anonymous
+users when ``GATE_ANONYMOUS_ACCESS`` is enabled. There is a single cache entry
+per project, so this is also the worst case: one render per project per
+interval, no matter how many requests arrive. The page says how stale it may
+be.
+
+.. versionadded:: 3.3
+
+``ANONYMOUS_LIST_MAX_SERIES``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The number of series shown in that listing. It has no filtering, ordering or
+pagination, so this is the whole page.
+
+.. versionadded:: 3.3
+
 ``COMPAT_REDIR``
 ~~~~~~~~~~~~~~~~
 
@@ -114,8 +133,30 @@ and series position - along with a link to the mailing list archive for the
 message contents and any discussion, instead of the full page. Nothing is
 removed: logging in gives the complete view again.
 
+The project patch list is replaced by a listing of the most recently updated
+series that still need action, which is a single cached page per project
+rather than an unbounded number of filter, sort and pagination combinations.
+See ``ANONYMOUS_LIST_MAX_SERIES`` and ``ANONYMOUS_LIST_CACHE_TIMEOUT``.
+
 This is intended for instances that are being crawled hard enough for it to
 affect availability.
+
+.. note::
+
+   The listing is cached using Django's `cache framework`__, so it is worth
+   configuring ``CACHES`` with a shared backend such as Memcached or Redis.
+   With the default per-process backend each worker keeps its own copy, and a
+   new series will appear and disappear as requests land on different
+   workers.
+
+   If you run a caching proxy such as Varnish in front of Patchwork, note
+   that these responses are sent with ``Cache-Control: public`` and never set
+   a cookie, but that reading the login state does mark them ``Vary:
+   Cookie``. Stripping the request's ``Cookie`` header for anonymous traffic
+   - which such a proxy has to do anyway before it will cache anything -
+   collapses that back to a single cached object per URL.
+
+__ https://docs.djangoproject.com/en/stable/topics/cache/
 
 .. versionadded:: 3.3
 
