@@ -151,6 +151,7 @@ def patch_detail(request, project_id, msgid):
     return render(request, 'patchwork/submission.html', context)
 
 
+@login_not_required
 def patch_raw(request, project_id, msgid):
     db_msgid = Patch.decode_msgid(msgid)
     project = get_object_or_404(Project, linkname=project_id)
@@ -165,6 +166,7 @@ def patch_raw(request, project_id, msgid):
     return response
 
 
+@login_not_required
 def patch_mbox(request, project_id, msgid):
     db_msgid = Patch.decode_msgid(msgid)
     project = get_object_or_404(Project, linkname=project_id)
@@ -197,6 +199,7 @@ def patch_by_id(request, patch_id):
     return HttpResponseRedirect(url)
 
 
+@login_not_required
 def patch_mbox_by_id(request, patch_id):
     patch = get_object_or_404(Patch, id=patch_id)
 
@@ -211,6 +214,7 @@ def patch_mbox_by_id(request, patch_id):
     return HttpResponseRedirect(url)
 
 
+@login_not_required
 def patch_raw_by_id(request, patch_id):
     patch = get_object_or_404(Patch, id=patch_id)
 

@@ -64,6 +64,7 @@ def cover_detail(request, project_id, msgid):
     return render(request, 'patchwork/submission.html', context)
 
 
+@login_not_required
 def cover_mbox(request, project_id, msgid):
     db_msgid = '<%s>' % msgid
     project = get_object_or_404(Project, linkname=project_id)
@@ -92,6 +93,7 @@ def cover_by_id(request, cover_id):
     return HttpResponseRedirect(url)
 
 
+@login_not_required
 def cover_mbox_by_id(request, cover_id):
     cover = get_object_or_404(Cover, id=cover_id)
 
