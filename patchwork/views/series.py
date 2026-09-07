@@ -47,6 +47,7 @@ def series_detail(request, series_id):
     return render(request, 'patchwork/series.html', context)
 
 
+@login_not_required
 def series_mbox(request, series_id):
     series = get_object_or_404(Series, id=series_id)
 
