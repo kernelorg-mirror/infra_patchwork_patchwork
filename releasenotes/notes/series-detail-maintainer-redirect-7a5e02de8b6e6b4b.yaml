@@ -1,0 +1,10 @@
+---
+fixes:
+  - |
+    The series detail view added in 3.3.0 is a read-only summary and never
+    had the bulk-edit UI (state, delegate, archive, bundles) that the patch
+    list filtered by series -- what ``Series.get_absolute_url()`` used to
+    point at -- offered maintainers. Maintainers following such a link are
+    now redirected to that filtered patch list instead, restoring the
+    ability to edit patches from a series link. Everyone else keeps the
+    cheaper, read-only page, since they couldn't edit anything there anyway.
