@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
-import os
 import re
 import unittest
 from unittest import mock
@@ -11,19 +10,39 @@ from unittest import mock
 from patchwork import version
 
 from django import test
+from django.core.exceptions import ImproperlyConfigured
+from django.test import override_settings
 
 
 class TestVersion(test.TestCase):
-    def test_build_version_env_override(self):
-        with mock.patch.dict(
-            os.environ, {'PATCHWORK_BUILD_VERSION': 'deadbeef'}
-        ):
-            self.assertEqual(version.get_latest_version(), 'deadbeef')
+    @override_settings(PATCHWORK_BUILD_VERSION='korg-2026090801')
+    def test_build_version_appended(self):
+        self.assertTrue(
+            version.get_latest_version().endswith('-korg-2026090801')
+        )
 
-    def test_build_version_env_unset_falls_back(self):
-        with mock.patch.dict(os.environ, {}, clear=False):
-            os.environ.pop('PATCHWORK_BUILD_VERSION', None)
-            self.assertNotEqual(version.get_latest_version(), '')
+    @override_settings(PATCHWORK_BUILD_VERSION='')
+    def test_build_version_unset_not_appended(self):
+        base_version = version.format_git_version(
+            version.get_git_version()
+        ) or version.format_str_version(version.get_str_version())
+
+        self.assertEqual(version.get_latest_version(), base_version)
+
+    def test_build_version_settings_not_configured(self):
+        """get_build_version() must not blow up when Django isn't set up.
+
+        This happens when the docs are built: 'import patchwork' runs
+        get_latest_version() at module load time, with no
+        DJANGO_SETTINGS_MODULE in sight.
+        """
+
+        class Unconfigured:
+            def __getattr__(self, name):
+                raise ImproperlyConfigured('settings are not configured')
+
+        with mock.patch('django.conf.settings', Unconfigured()):
+            self.assertEqual(version.get_build_version(), '')
 
     @unittest.skipIf(
         version.get_git_version() == '',

@@ -13,20 +13,36 @@ ROOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), os.pardir)
 def get_latest_version():
     """Returns the most recent version available.
 
-    This is, in order of preference: the ``PATCHWORK_BUILD_VERSION``
-    environment variable (set by the deployment at build/deploy time, since
-    a deployed instance is often not a Git checkout and so has no other way
-    to self-identify which commit it's running); the version per the most
-    recent Git tag, if this is a Git checkout; or the hard-coded version.
+    This is either the hard-coded version or, if using Git, the version
+    per the most recent Git tag, with ``settings.PATCHWORK_BUILD_VERSION``
+    appended, if set. The latter lets a deployment self-identify which
+    build it's running, which matters most for deployments that are not
+    Git checkouts (e.g. a container image built from a source tarball) and
+    so have no other way to tell.
     """
-    build_version = os.environ.get('PATCHWORK_BUILD_VERSION')
-    if build_version:
-        return build_version
-
     git_version = format_git_version(get_git_version())
     str_version = format_str_version(get_str_version())
 
-    return git_version or str_version
+    version = git_version or str_version
+
+    build_version = get_build_version()
+    if build_version:
+        version = '%s-%s' % (version, build_version)
+
+    return version
+
+
+def get_build_version():
+    """Returns the deployment-specific build identifier, if configured."""
+    from django.conf import settings
+    from django.core.exceptions import ImproperlyConfigured
+
+    try:
+        return settings.PATCHWORK_BUILD_VERSION
+    except ImproperlyConfigured:
+        # Django may not be configured at all when this is imported, e.g.
+        # when building the docs.
+        return ''
 
 
 def format_str_version(version):

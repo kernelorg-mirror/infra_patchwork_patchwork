@@ -274,6 +274,14 @@ MAX_REST_RESULTS_PER_PAGE = 250
 # enough to affect availability.
 GATE_ANONYMOUS_ACCESS = False
 
+# A deployment-specific build identifier, appended to the version shown in
+# the page footer and the 'about' page, e.g. 'v3.3.0a0-korg-2026090801'.
+# Deployments that are not Git checkouts (e.g. a container image built from
+# a source tarball) cannot otherwise self-identify which commit they're
+# running, since 'git describe' has nothing to work with. Empty by default,
+# in which case nothing is appended.
+PATCHWORK_BUILD_VERSION = ''
+
 # The number of series shown in the limited listing served to anonymous
 # users when GATE_ANONYMOUS_ACCESS is enabled. The listing has no filtering
 # or pagination, so this is also its worst case.
