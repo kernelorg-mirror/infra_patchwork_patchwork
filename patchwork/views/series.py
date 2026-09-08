@@ -5,8 +5,10 @@
 
 from django.contrib.auth.decorators import login_not_required
 from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
+from django.urls import reverse
 
 from patchwork.models import Series
 from patchwork.views.anonymous import is_gated
@@ -24,6 +26,24 @@ def series_detail(request, series_id):
     )
 
     gated = is_gated(request)
+
+    if (
+        not gated
+        and series.project
+        and series.project.is_editable(request.user)
+    ):
+        # This read-only summary has no bulk-edit UI (state, delegate,
+        # archive, bundles), unlike the patch list it replaced as
+        # Series.get_absolute_url(). Maintainers get sent to the filtered
+        # patch list instead, where that's still available; everyone else
+        # gets the cheaper page, since they couldn't edit anything anyway.
+        return HttpResponseRedirect(
+            reverse(
+                'patch-list',
+                kwargs={'project_id': series.project.linkname},
+            )
+            + '?series=%d' % series.id
+        )
 
     patches = series.patches.order_by('number')
     if gated:
