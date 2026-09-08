@@ -1,0 +1,11 @@
+---
+features:
+  - |
+    A deployment can now self-identify which build it's running by setting
+    ``PATCHWORK_BUILD_VERSION`` in its settings file, e.g. to a commit SHA or
+    a date-based build number. It's appended to the version shown in the
+    page footer and the 'about' page -- useful for confirming which build is
+    actually live in an environment when multiple branches or deploy
+    targets are in play, since ``git describe``-based version detection
+    otherwise falls back to a static string for any deployment that isn't a
+    Git checkout.
