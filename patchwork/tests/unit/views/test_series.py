@@ -11,6 +11,7 @@ from patchwork.models import Series
 from patchwork.tests.utils import SAMPLE_DIFF
 from patchwork.tests.utils import create_check
 from patchwork.tests.utils import create_cover
+from patchwork.tests.utils import create_maintainer
 from patchwork.tests.utils import create_patch
 from patchwork.tests.utils import create_series
 from patchwork.tests.utils import create_state
@@ -161,6 +162,27 @@ class SeriesDetailGatedTest(TestCase):
 
         self.assertContains(response, 'patchlistchecks')
         self.assertContains(response, series.get_mbox_url())
+
+    def test_maintainer_redirected_to_patch_list(self):
+        """Maintainers get the bulk-edit UI, not the read-only summary.
+
+        The series page has no edit form of its own, unlike the filtered
+        patch list this page replaced as Series.get_absolute_url(). A
+        maintainer following a link built from that URL should still land
+        somewhere they can actually edit the patches.
+        """
+        series = create_series()
+        self.client.force_login(create_maintainer(project=series.project))
+
+        response = self.client.get(series.get_absolute_url())
+
+        self.assertRedirects(
+            response,
+            reverse(
+                'patch-list', kwargs={'project_id': series.project.linkname}
+            )
+            + '?series=%d' % series.id,
+        )
 
     def test_query_count(self):
         series = create_series(total=3)
