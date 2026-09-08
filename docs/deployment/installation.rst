@@ -253,6 +253,24 @@ Export the ``STATIC_ROOT`` environment variable or configure the
 
    STATIC_ROOT = '/var/www/patchwork'
 
+Build Identification
+^^^^^^^^^^^^^^^^^^^^^
+
+If your deployment does not run from a Git checkout (for example, a container
+image built from a source tarball), Patchwork cannot self-identify which
+commit it's running via ``git describe``, and the version shown in the page
+footer will always be the static, hard-coded version instead. To let each
+deployment self-identify, export the ``PATCHWORK_BUILD_VERSION`` environment
+variable at deploy time, set to something identifying the build, such as the
+Git commit SHA:
+
+.. code-block:: shell
+
+   $ export PATCHWORK_BUILD_VERSION="$(git rev-parse --short HEAD)"
+
+This is particularly useful for confirming which version is actually live
+in an environment when multiple branches or deploy targets are in play.
+
 Secret Key
 ^^^^^^^^^^
 
