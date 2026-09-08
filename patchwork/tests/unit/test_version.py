@@ -3,8 +3,10 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+import os
 import re
 import unittest
+from unittest import mock
 
 from patchwork import version
 
@@ -12,6 +14,17 @@ from django import test
 
 
 class TestVersion(test.TestCase):
+    def test_build_version_env_override(self):
+        with mock.patch.dict(
+            os.environ, {'PATCHWORK_BUILD_VERSION': 'deadbeef'}
+        ):
+            self.assertEqual(version.get_latest_version(), 'deadbeef')
+
+    def test_build_version_env_unset_falls_back(self):
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop('PATCHWORK_BUILD_VERSION', None)
+            self.assertNotEqual(version.get_latest_version(), '')
+
     @unittest.skipIf(
         version.get_git_version() == '',
         "this doesn't appear to be a git repo so we can't run git-based tests",
