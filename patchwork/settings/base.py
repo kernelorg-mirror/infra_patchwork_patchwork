@@ -268,6 +268,14 @@ MAX_REST_RESULTS_PER_PAGE = 250
 
 MAX_ITEMS_PER_PAGE = 1000
 
+# A deployment-specific build identifier, appended to the version shown in
+# the page footer and the 'about' page, e.g. 'v3.3.0a0-korg-2026090801'.
+# Deployments that are not Git checkouts (e.g. a container image built from
+# a source tarball) cannot otherwise self-identify which commit they're
+# running, since 'git describe' has nothing to work with. Empty by default,
+# in which case nothing is appended.
+PATCHWORK_BUILD_VERSION = ''
+
 # Set to True to enable redirections or URLs from previous versions
 # of patchwork
 COMPAT_REDIR = True
