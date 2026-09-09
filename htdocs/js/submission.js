@@ -72,4 +72,13 @@ $( document ).ready(function() {
             toggleDiv("toggle-related-outside", "related-outside", "show from other projects");
         });
     }
+
+    // Diff color scheme, set on the profile page and persisted client-side
+    // in a cookie
+    const patch = document.getElementById("patch");
+    if (patch) {
+        const scheme = Cookies.get("diff_color_scheme") || "accessible";
+        patch.classList.toggle("diff-cgit", scheme === "cgit");
+        patch.classList.toggle("diff-legacy", scheme === "legacy");
+    }
 });

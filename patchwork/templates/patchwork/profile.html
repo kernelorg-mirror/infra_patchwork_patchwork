@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 
+{% load static %}
+
+{% block headers %}
+    <script type="module" src="{% static "js/profile.js" %}"></script>
+{% endblock %}
+
 {% block title %}{{ user.username }}{% endblock %}
 {% block heading %}Your Profile{% endblock %}
 
@@ -132,6 +138,25 @@
         </tr>
       </table>
     </form>
+  </div>
+
+  <div class="box">
+    <h2>Diff display</h2>
+    <table class="form">
+      <tr>
+        <th><label for="diff-color-scheme">Diff colors:</label></th>
+        <td>
+          <select id="diff-color-scheme">
+            <option value="accessible">Accessible (default)</option>
+            <option value="cgit">cgit</option>
+            <option value="legacy">Legacy</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+    <p>
+      Only affects diffs shown in this browser.
+    </p>
   </div>
 
   <div class="box">

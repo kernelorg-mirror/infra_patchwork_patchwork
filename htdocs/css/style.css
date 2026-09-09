@@ -388,6 +388,23 @@ span.p_add    { color: #1b9d09; background-color: #edffed; }
 span.p_del    { color: #c80101; background-color: #ffe2e2; }
 span.p_mod    { color: #a020f0; }
 
+/* cgit-style diff colouring, selectable via the user's profile settings */
+.diff-cgit span.p_header    { font-weight: bold; }
+.diff-cgit span.p_chunk    { color: #009; font-weight: normal; }
+.diff-cgit span.p_context    { }
+.diff-cgit span.p_add    { color: green; background-color: transparent; }
+.diff-cgit span.p_del    { color: red; background-color: transparent; }
+.diff-cgit span.p_mod    { color: #a020f0; }
+
+/* Patchwork's pre-2022 diff colouring (before c443cd9 "css: make diff
+ * colors more accessible"), selectable via the user's profile settings */
+.diff-legacy span.p_header    { color: #2e8b57; font-weight: bold; }
+.diff-legacy span.p_chunk    { color: #a52a2a; font-weight: bold; }
+.diff-legacy span.p_context    { color: #a020f0; }
+.diff-legacy span.p_add    { color: #008b8b; background-color: transparent; }
+.diff-legacy span.p_del    { color: #6a5acd; background-color: transparent; }
+.diff-legacy span.p_mod    { color: #0000ff; }
+
 .acked-by {
     color: #2d4566;
 
