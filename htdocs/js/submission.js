@@ -50,9 +50,12 @@ $( document ).ready(function() {
     });
 
     // Click listener to expand/collapse series
-    document.getElementById("toggle-patch-series").addEventListener("click", function() {
-        toggleDiv("toggle-patch-series", "patch-series", "expand", "collapse");
-    });
+    let patchSeries = document.getElementById("toggle-patch-series");
+    if (patchSeries) {
+        patchSeries.addEventListener("click", function() {
+            toggleDiv("toggle-patch-series", "patch-series", "expand", "collapse");
+        });
+    }
 
     // Click listener to show/hide related patches
     let related = document.getElementById("toggle-related");
