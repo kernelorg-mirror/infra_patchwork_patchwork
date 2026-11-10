@@ -1,0 +1,7 @@
+---
+other:
+  - |
+    The REST API series and cover letter lists now page over IDs before
+    fetching the rows for a page, as the patch list already did. Requests for
+    deep pages no longer make the database build every joined row before the
+    requested offset.

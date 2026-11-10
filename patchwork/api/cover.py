@@ -11,6 +11,7 @@ from rest_framework.reverse import reverse
 from rest_framework.serializers import SerializerMethodField
 
 from patchwork.api.base import BaseHyperlinkedModelSerializer
+from patchwork.api.base import IDPagination
 from patchwork.api.filters import CoverFilterSet
 from patchwork.api.embedded import PersonSerializer
 from patchwork.api.embedded import ProjectSerializer
@@ -102,6 +103,7 @@ class CoverList(ListAPIView):
     """List cover letters."""
 
     serializer_class = CoverListSerializer
+    pagination_class = IDPagination
     filter_class = filterset_class = CoverFilterSet
     search_fields = ('name',)
     scope_params = ('project', 'series')
