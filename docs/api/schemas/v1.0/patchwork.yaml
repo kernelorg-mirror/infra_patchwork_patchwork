@@ -153,6 +153,15 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CoverList'
+        '400':
+          description: |
+            A search or an ordering that would have to scan every project, on
+            an instance that restricts those. The error names the parameters
+            that narrow the request down.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       tags:
         - covers
   /api/1.0/covers/{id}:
@@ -386,6 +395,15 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/PatchList'
+        '400':
+          description: |
+            A search or an ordering that would have to scan every project, on
+            an instance that restricts those. The error names the parameters
+            that narrow the request down.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       tags:
         - patches
   /api/1.0/patches/{id}:
@@ -904,6 +922,15 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Series'
+        '400':
+          description: |
+            A search or an ordering that would have to scan every project, on
+            an instance that restricts those. The error names the parameters
+            that narrow the request down.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
       tags:
         - series
   /api/1.0/series/{id}:

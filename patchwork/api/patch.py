@@ -361,6 +361,8 @@ class PatchList(ListAPIView):
     pagination_class = PatchListPagination
     filter_class = filterset_class = PatchFilterSet
     search_fields = ('name',)
+    scope_params = ('project', 'series')
+    unscoped_ordering = ('id',)
     ordering_fields = (
         'id',
         'name',

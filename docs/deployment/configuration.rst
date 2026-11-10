@@ -195,6 +195,30 @@ email, ensuring users are not spammed with emails from Patchwork.
 
 The email address that notification emails should be sent from.
 
+``REST_RESTRICT_UNSCOPED_QUERIES``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If True, the REST API refuses list requests that would have to scan every
+project, answering them with a ``400 Bad Request`` instead. These are:
+
+- searches using the ``q`` parameter, which match any part of a name and so
+  cannot use an index
+- orderings that no index can serve, such as ordering patches by name
+
+Each one is allowed again once the request is narrowed down, by ``project``
+for patches, cover letters and series, or by ``series`` for patches and cover
+letters. The error message lists these parameters, so that whoever wrote the
+client knows what to change.
+
+Requests like these are cheap within one project but scan every row of the
+table across all of them. A script that sends them in a loop can take up most
+of the database on a large instance, often without its author knowing.
+
+Defaults to False, since enabling it turns away requests that existing
+clients may make.
+
+.. versionadded:: 3.4
+
 ``REST_RESULTS_PER_PAGE``
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -1,0 +1,15 @@
+---
+features:
+  - |
+    A new setting, ``REST_RESTRICT_UNSCOPED_QUERIES``, makes the REST API
+    refuse searches and expensive orderings on the patch, cover letter and
+    series lists unless they are narrowed down to a project or series. Such
+    requests scan every row of the table, and are an easy way for a script to
+    overload a large instance without meaning to.
+api:
+  - |
+    The patch, cover letter and series list endpoints can now answer with
+    ``400 Bad Request`` when a ``q`` search, or an ordering that has to scan
+    every project, is made without a ``project`` or ``series`` parameter. This
+    only happens when the instance enables
+    ``REST_RESTRICT_UNSCOPED_QUERIES``.

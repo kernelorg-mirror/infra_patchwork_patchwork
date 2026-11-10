@@ -122,6 +122,8 @@ class SeriesList(SeriesMixin, ListAPIView):
 
     filter_class = filterset_class = SeriesFilterSet
     search_fields = ('name',)
+    scope_params = ('project',)
+    unscoped_ordering = ('id',)
     ordering_fields = ('id', 'name', 'date', 'submitter', 'received_all')
     ordering = 'id'
 
