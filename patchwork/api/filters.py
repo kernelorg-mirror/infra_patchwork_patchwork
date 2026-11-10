@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db.models import Q
@@ -14,6 +15,7 @@ from django_filters import ModelMultipleChoiceFilter
 from django.forms import ModelMultipleChoiceField as BaseMultipleChoiceField
 from django.forms.widgets import MultipleHiddenInput
 from rest_framework import exceptions
+from rest_framework import filters
 
 from patchwork.api import utils
 from patchwork.models import Bundle
@@ -36,6 +38,51 @@ class DjangoFilterBackend(rest_framework.DjangoFilterBackend):
             return super().filter_queryset(request, queryset, view)
         except exceptions.ValidationError:
             return queryset.none()
+
+
+class UnscopedQuery(exceptions.APIException):
+    status_code = 400
+    default_code = 'unscoped_query'
+
+
+def check_scoped(request, view, what):
+    """Refuse a request that would have to scan every project.
+
+    Views opt in by listing the query parameters that narrow them down in
+    ``scope_params``. The message names those parameters, because the
+    clients this turns away are usually scripts whose authors never knew
+    the request was expensive.
+    """
+    params = getattr(view, 'scope_params', ())
+    if not settings.REST_RESTRICT_UNSCOPED_QUERIES or not params:
+        return
+
+    if any(request.query_params.get(param) for param in params):
+        return
+
+    raise UnscopedQuery(
+        '%s must be limited with one of these parameters: %s'
+        % (what, ', '.join(params))
+    )
+
+
+class SearchFilter(filters.SearchFilter):
+    def filter_queryset(self, request, queryset, view):
+        if self.get_search_terms(request):
+            check_scoped(request, view, 'Searches')
+        return super().filter_queryset(request, queryset, view)
+
+
+class OrderingFilter(filters.OrderingFilter):
+    def filter_queryset(self, request, queryset, view):
+        # only an explicit ordering can be expensive: the view's default is
+        # chosen to be cheap, and so is what unknown fields fall back to
+        if request.query_params.get(self.ordering_param):
+            ordering = self.get_ordering(request, queryset, view) or ()
+            fields = {term.lstrip('-') for term in ordering}
+            if not fields <= set(getattr(view, 'unscoped_ordering', ())):
+                check_scoped(request, view, 'This ordering')
+        return super().filter_queryset(request, queryset, view)
 
 
 # custom fields, filters

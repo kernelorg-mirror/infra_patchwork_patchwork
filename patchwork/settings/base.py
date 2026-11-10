@@ -175,8 +175,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'patchwork.api.base.LinkHeaderPagination',
     'DEFAULT_FILTER_BACKENDS': (
         'patchwork.api.filters.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
+        'patchwork.api.filters.SearchFilter',
+        'patchwork.api.filters.OrderingFilter',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
@@ -266,6 +266,12 @@ ENABLE_REST_API = True
 
 REST_RESULTS_PER_PAGE = 30
 MAX_REST_RESULTS_PER_PAGE = 250
+
+# Set to True to refuse REST API list requests that would have to scan every
+# project: a search ('q') or an ordering that no index can serve, made without
+# a parameter such as 'project' that narrows the request down. Off by default,
+# since it turns away requests that existing clients may make.
+REST_RESTRICT_UNSCOPED_QUERIES = False
 
 MAX_ITEMS_PER_PAGE = 1000
 

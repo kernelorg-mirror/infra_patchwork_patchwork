@@ -104,6 +104,9 @@ class CoverList(ListAPIView):
     serializer_class = CoverListSerializer
     filter_class = filterset_class = CoverFilterSet
     search_fields = ('name',)
+    scope_params = ('project', 'series')
+    # cover_covering_idx leads with the date
+    unscoped_ordering = ('id', 'date')
     ordering_fields = ('id', 'name', 'date', 'submitter')
     ordering = 'id'
 
