@@ -140,6 +140,16 @@ class TestBundleAPI(utils.APITestCase):
         self.assertIn('url', resp.data[0])
         self.assertNotIn('web_url', resp.data[0])
 
+    def test_list_bug_335(self):
+        """Ensure we retrieve the embedded patch projects once."""
+        for _ in range(3):
+            bundle = create_bundle(public=True)
+            bundle.append_patch(create_patch(project=bundle.project))
+
+        # count, bundles, their patches and those patches' projects
+        with self.assertNumQueries(4):
+            self.client.get(self.api_url())
+
     def test_detail_anonymous_public(self):
         """Show public bundle as anonymous user.
 

@@ -1,0 +1,5 @@
+---
+fixes:
+  - |
+    Listing bundles in the REST API no longer makes a database query for the
+    project of every patch in every bundle.
