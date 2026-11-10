@@ -1,0 +1,6 @@
+---
+upgrade:
+  - |
+    A migration adds two indexes on the date of events, so that listing
+    events, and polling them with ``since``, no longer reads and sorts every
+    event. Building them can take a while on an instance with many events.

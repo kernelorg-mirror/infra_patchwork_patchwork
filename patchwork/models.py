@@ -1375,6 +1375,15 @@ class Event(models.Model):
 
     class Meta:
         ordering = ['-date']
+        indexes = [
+            # Events are listed newest first and polled with 'since', usually
+            # for one project. Without these, each such request reads and
+            # sorts every event there is.
+            models.Index(fields=['date'], name='event_date_idx'),
+            models.Index(
+                fields=['project', 'date'], name='event_project_date_idx'
+            ),
+        ]
 
 
 class EmailConfirmation(models.Model):
