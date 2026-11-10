@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    Filtering cover letters by series in the REST API, using
+    ``/api/covers/?series=<id>``, now works. It previously looked the ID up
+    as a project, so it either returned the wrong cover letters or failed
+    with a server error.
