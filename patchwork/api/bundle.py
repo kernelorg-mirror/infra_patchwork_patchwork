@@ -144,7 +144,7 @@ class BundleMixin(object):
         return (
             Bundle.objects.filter(bundle_filter)
             .prefetch_related(
-                'patches',
+                'patches__project',
             )
             .select_related('owner', 'project')
         )
