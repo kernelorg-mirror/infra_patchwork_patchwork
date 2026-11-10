@@ -24,6 +24,7 @@ from patchwork.views.anonymous import patch_metadata
 from patchwork.views.anonymous import render_stub
 from patchwork.views.anonymous import series_list
 from patchwork.views import set_bundle
+from patchwork.views.utils import cacheable_download
 from patchwork.views.utils import patch_to_mbox
 from patchwork.views.utils import series_patch_to_mbox
 
@@ -152,6 +153,8 @@ def patch_detail(request, project_id, msgid):
 
 
 @login_not_required
+# a diff does not change once it has been mailed out
+@cacheable_download(max_age=86400)
 def patch_raw(request, project_id, msgid):
     db_msgid = Patch.decode_msgid(msgid)
     project = get_object_or_404(Project, linkname=project_id)
@@ -167,6 +170,7 @@ def patch_raw(request, project_id, msgid):
 
 
 @login_not_required
+@cacheable_download()
 def patch_mbox(request, project_id, msgid):
     db_msgid = Patch.decode_msgid(msgid)
     project = get_object_or_404(Project, linkname=project_id)

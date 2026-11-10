@@ -17,6 +17,7 @@ from patchwork.models import Project
 from patchwork.views.anonymous import cover_metadata
 from patchwork.views.anonymous import is_gated
 from patchwork.views.anonymous import render_stub
+from patchwork.views.utils import cacheable_download
 from patchwork.views.utils import cover_to_mbox
 
 
@@ -65,6 +66,7 @@ def cover_detail(request, project_id, msgid):
 
 
 @login_not_required
+@cacheable_download()
 def cover_mbox(request, project_id, msgid):
     db_msgid = '<%s>' % msgid
     project = get_object_or_404(Project, linkname=project_id)

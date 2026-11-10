@@ -13,6 +13,7 @@ from django.urls import reverse
 from patchwork.models import Series
 from patchwork.views.anonymous import is_gated
 from patchwork.views.anonymous import patch_metadata
+from patchwork.views.utils import cacheable_download
 from patchwork.views.utils import series_to_mbox
 
 
@@ -68,6 +69,7 @@ def series_detail(request, series_id):
 
 
 @login_not_required
+@cacheable_download()
 def series_mbox(request, series_id):
     series = get_object_or_404(Series, id=series_id)
 
