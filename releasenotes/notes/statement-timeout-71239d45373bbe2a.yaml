@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    A new setting, ``STATEMENT_TIMEOUT``, limits how long a single database
+    statement may run while serving a read-only request. Requests that run
+    out of time are answered with ``503 Service Unavailable`` and a
+    ``Retry-After`` header, so that one expensive request repeated in a loop
+    cannot keep every worker waiting on the database. It is supported on
+    MySQL, MariaDB and PostgreSQL, and is off by default.
