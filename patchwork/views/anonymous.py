@@ -19,6 +19,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.db.models import Count
+from django.db.models import Exists
+from django.db.models import OuterRef
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -93,11 +95,16 @@ def _render_series_list(request, project):
     over a multi-valued relation does not mean the same thing on PostgreSQL
     as it does on MySQL.
     """
+    # EXISTS rather than a join, which needs DISTINCT to undo the row per
+    # matching patch it produces. This still reads every series in the
+    # project - MariaDB turns EXISTS into a semi-join rather than stopping
+    # at the newest few - which is why the result is cached.
+    needs_action = Patch.objects.filter(
+        series=OuterRef('pk'), state__action_required=True
+    )
     series_list = list(
-        Series.objects.filter(
-            project=project, patch__state__action_required=True
-        )
-        .distinct()
+        Series.objects.filter(project=project)
+        .filter(Exists(needs_action))
         .select_related('submitter')
         .order_by('-date')[: settings.ANONYMOUS_LIST_MAX_SERIES]
     )
