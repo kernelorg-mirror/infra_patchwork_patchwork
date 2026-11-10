@@ -31,6 +31,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'patchwork.middleware.GateAnonymousAccessMiddleware',
+    'patchwork.middleware.StatementTimeoutMiddleware',
     'django.contrib.admindocs.middleware.XViewMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -272,6 +273,11 @@ MAX_REST_RESULTS_PER_PAGE = 250
 # a parameter such as 'project' that narrows the request down. Off by default,
 # since it turns away requests that existing clients may make.
 REST_RESTRICT_UNSCOPED_QUERIES = False
+
+# How long, in seconds, a single database statement may run while serving a
+# read-only request, after which the request is answered with a 503. None,
+# the default, sets no limit. Has no effect on SQLite.
+STATEMENT_TIMEOUT = None
 
 MAX_ITEMS_PER_PAGE = 1000
 

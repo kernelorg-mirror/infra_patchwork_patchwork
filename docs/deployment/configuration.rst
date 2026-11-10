@@ -226,3 +226,26 @@ The number of items to include in REST API responses by default. This can be
 overridden by the ``per_page`` parameter for some endpoints.
 
 .. versionadded:: 2.0
+
+``STATEMENT_TIMEOUT``
+~~~~~~~~~~~~~~~~~~~~~
+
+How long, in seconds, a single database statement may run while serving a
+read-only (``GET``, ``HEAD`` or ``OPTIONS``) request. A statement that runs
+longer is stopped, and the request is answered with ``503 Service
+Unavailable`` and a ``Retry-After`` header, instead of keeping a worker and
+the database busy for a client that has likely given up already.
+
+A few seconds is a reasonable value: well above what a normal page or API
+call takes, and well below the timeout of your WSGI server, so that the
+database stops the query before the server gives up on the worker.
+
+It only applies to reads, since a write that is stopped part way may already
+have done some of its work, and never to management commands such as
+``migrate``, which can legitimately run long statements. It is supported on
+MySQL, MariaDB and PostgreSQL, and has no effect on SQLite. On MySQL, only
+``SELECT`` statements are limited.
+
+Defaults to ``None``, which sets no limit.
+
+.. versionadded:: 3.4
