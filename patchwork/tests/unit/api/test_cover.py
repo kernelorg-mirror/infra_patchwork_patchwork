@@ -109,6 +109,17 @@ class TestCoverAPI(utils.APITestCase):
         )
         self.assertEqual(0, len(resp.data))
 
+    def test_list_filter_series(self):
+        """Filter cover letters by series."""
+        cover = create_cover()
+        create_cover()
+
+        resp = self.client.get(self.api_url(), {'series': cover.series.id})
+        self.assertEqual([cover.id], [x['id'] for x in resp.data])
+
+        resp = self.client.get(self.api_url(), {'series': 999999})
+        self.assertEqual(0, len(resp.data))
+
     def test_list_filter_msgid(self):
         """Filter covers by msgid."""
         cover = create_cover()

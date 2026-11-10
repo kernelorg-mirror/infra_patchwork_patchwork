@@ -180,7 +180,7 @@ class CoverFilterSet(TimestampMixin, BaseFilterSet):
     # NOTE(stephenfin): We disable the select-based HTML widgets for these
     # filters as the resulting query is _huge_
     series = BaseFilter(
-        queryset=Project.objects.all(),
+        queryset=Series.objects.all(),
         widget=MultipleHiddenInput,
         distinct=False,
     )
