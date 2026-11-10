@@ -57,6 +57,15 @@ per project, so this is also the worst case: one render per project per
 interval, no matter how many requests arrive. The page says how stale it may
 be.
 
+Once a copy is out of date, one request renders a new one while the others
+go on getting the old copy, so a project's listing is never rendered by more
+than one worker at a time. If that render fails, for instance because the
+database is overloaded, the old copy keeps being served for up to another
+interval while the render is retried about once a minute. When there is no
+old copy to serve, which is the case for a project's first render, the other
+requests are answered with ``503 Service Unavailable`` and a ``Retry-After``
+header instead.
+
 .. versionadded:: 3.3
 
 ``ANONYMOUS_LIST_MAX_SERIES``
