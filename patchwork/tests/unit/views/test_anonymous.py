@@ -263,6 +263,18 @@ class SeriesListTest(TestCase):
         self.assertContains(response, active.get_absolute_url())
         self.assertNotContains(response, inactive.get_absolute_url())
 
+    def test_series_are_listed_once(self):
+        """A series is one row, however many of its patches need action."""
+        one = self._series([self.state])
+        many = self._series([self.state, self.state, self.state])
+
+        content = self.client.get(self.url).content.decode()
+
+        self.assertEqual(
+            content.count(one.get_absolute_url()),
+            content.count(many.get_absolute_url()),
+        )
+
     def test_mixed_state(self):
         self._series([self.state, self.done])
 
