@@ -268,6 +268,91 @@ The possible ``rel`` values are:
    * - ``prev``
      - The link relation for the immediate previous page of results.
 
+.. _rest-api-clients:
+
+Writing Well-Behaved Clients
+----------------------------
+
+A Patchwork instance is usually shared by many people and many scripts. A
+client that polls in a loop can easily cost the server more than everyone
+else combined, often without its author knowing. These practices keep your
+client fast and keep the instance available for everyone.
+
+Say who you are
+~~~~~~~~~~~~~~~
+
+Send your API token with every request, including ``GET`` requests, and a
+``User-Agent`` that names your tool and says how to reach you:
+
+.. code-block:: shell
+
+    $ curl -H "Authorization: Token ${token}" \
+        -A 'my-ci-bot/1.0 (+https://example.com/my-ci-bot)' \
+        'https://patchwork.example.com/api/1.4/projects/'
+
+If your client causes a problem, this lets the administrators contact you
+instead of blocking you.
+
+Ask what changed, not for everything
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To follow a project, poll the events API with ``since`` set to the date of
+the newest event you have already seen, and filter on the categories you
+care about:
+
+.. code-block:: shell
+
+    $ curl 'https://patchwork.example.com/api/1.4/events/?project=myproject&category=series-completed&category=patch-state-changed&since=2026-11-10T12:00:00'
+
+This returns only what happened since your last poll, instead of the same
+list of patches every time.
+
+Fetch a series in one request
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To learn where each patch in a series stands, list them with one request
+to ``/api/1.4/patches/?series=<id>``. Each patch in the list carries its
+``state`` and ``name``, but not its diff. Do not fetch the patches one by
+one: a patch's own endpoint returns its full diff, which is the most
+expensive thing the API serves.
+
+Narrow down your requests
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Always pass ``project`` when you list or search. A search with ``q``, or an
+ordering such as ``order=name``, has to scan every project when it is not
+narrowed down. Instances may refuse such requests with ``400 Bad Request``;
+the error message says which parameters to add.
+
+Use fewer, larger pages: set ``per_page`` to the largest value the instance
+allows, and stop following ``next`` links once you have what you need.
+
+Make one request at a time
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Send requests one after another, or at most a few at a time. A burst of
+parallel requests is no faster for you once the server is busy, and it can
+take up every worker the instance has.
+
+Do not download the same thing twice
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Patch, cover letter and series downloads (``/mbox/`` and ``/raw/``) carry an
+``ETag``. Keep it, and send it back in an ``If-None-Match`` header the next
+time: if nothing has changed, you get an empty ``304 Not Modified``.
+
+Back off when something goes wrong
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- On ``429 Too Many Requests`` or ``503 Service Unavailable``, wait for as
+  long as the ``Retry-After`` header says before you try again.
+- On any other ``5xx`` error, wait before retrying, starting at several
+  seconds and doubling the wait each time. Retrying at once only adds to
+  whatever is already wrong.
+- When the server comes back after an outage, catch up slowly instead of
+  sending everything you missed at once.
+- Do not retry other ``4xx`` errors: the same request will fail again.
+
 .. _rest-api-versions:
 
 Supported Versions

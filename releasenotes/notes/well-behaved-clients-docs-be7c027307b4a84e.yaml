@@ -1,0 +1,7 @@
+---
+other:
+  - |
+    The REST API documentation has a new section on writing well-behaved
+    clients: identifying yourself, polling the events API for changes,
+    fetching a series in one request, narrowing requests down to a project,
+    revalidating downloads, and backing off on errors.
