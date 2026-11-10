@@ -3,11 +3,14 @@
 #
 # SPDX-License-Identifier: GPL-2.0-or-later
 
+from unittest import mock
+
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.contrib import messages
 from django.contrib.messages.storage.fallback import FallbackStorage
 from django.core.cache import cache
+from django.db import OperationalError
 from django.test import RequestFactory
 from django.test import TestCase
 from django.test import override_settings
@@ -364,6 +367,137 @@ class SeriesListTest(TestCase):
 
         self.assertContains(response, theirs.get_absolute_url())
         self.assertNotContains(response, mine.get_absolute_url())
+
+    def _clock(self):
+        """Patch the view's clock; returns a list holding 'now'."""
+        now = [1_000_000.0]
+        patcher = mock.patch.object(anonymous, 'time')
+        self.addCleanup(patcher.stop)
+        patcher.start().time.side_effect = lambda: now[0]
+        return now
+
+    def test_max_age_counts_down(self):
+        """A shared cache is told how long the copy has left, not a full TTL.
+
+        Otherwise a copy fetched just before it went stale would be kept for
+        another full interval, twice as stale as the page says it may be.
+        """
+        now = self._clock()
+        self.client.get(self.url)
+
+        now[0] += 100
+        response = self.client.get(self.url)
+
+        self.assertEqual(response['Cache-Control'], 'public, max-age=200')
+
+    def test_expired_copy_is_rerendered(self):
+        now = self._clock()
+        self.client.get(self.url)
+        new = self._series([self.state])
+
+        now[0] += 301
+        response = self.client.get(self.url)
+
+        self.assertContains(response, new.get_absolute_url())
+        self.assertEqual(response['Cache-Control'], 'public, max-age=300')
+        self.assertIsNone(cache.get(anonymous._lock_key(self.project)))
+
+    def test_stale_copy_served_while_another_render_runs(self):
+        """Only one worker re-renders; the rest serve the old copy.
+
+        Without that, every request arriving while the copy is stale would
+        run the same expensive query at once.
+        """
+        now = self._clock()
+        self.client.get(self.url)
+        new = self._series([self.state])
+
+        now[0] += 301
+        # another worker is already rendering
+        cache.add(anonymous._lock_key(self.project), True)
+        # the project lookup, and nothing else
+        with self.assertNumQueries(1):
+            response = self.client.get(self.url)
+
+        self.assertNotContains(response, new.get_absolute_url())
+        # stale already: no one downstream should keep it
+        self.assertEqual(response['Cache-Control'], 'public, max-age=0')
+
+    def test_failed_render_keeps_serving_the_stale_copy(self):
+        """A render that fails, say on a statement timeout, keeps the lock.
+
+        The other workers go on serving the old copy until the lock expires,
+        rather than all retrying the query against a struggling database.
+        """
+        now = self._clock()
+        self.client.get(self.url)
+
+        now[0] += 301
+        with mock.patch.object(
+            anonymous,
+            '_render_series_list',
+            side_effect=OperationalError(1969, 'interrupted'),
+        ):
+            with self.assertRaises(OperationalError):
+                self.client.get(self.url)
+
+        new = self._series([self.state])
+        response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, new.get_absolute_url())
+
+    def test_first_render_is_not_repeated_by_others(self):
+        """With no copy to serve, the other workers ask the client to wait.
+
+        Until a project's first render finishes there is nothing to fall
+        back on, and that is when a render is slowest: letting every request
+        run it would multiply the one query the cache exists to bound.
+        """
+        self._series([self.state])
+        # another worker is already rendering
+        cache.add(anonymous._lock_key(self.project), True)
+
+        # the project lookup, and nothing else
+        with self.assertNumQueries(1):
+            response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 503)
+        self.assertIn('Retry-After', response)
+        # the next request should get the listing, not this
+        self.assertEqual(response['Cache-Control'], 'no-store')
+
+    def test_failed_first_render_is_not_retried_at_once(self):
+        """A first render that fails keeps the lock, like any other.
+
+        With no copy stored, nothing else stops each following request from
+        running the query that just failed.
+        """
+        self._series([self.state])
+        with mock.patch.object(
+            anonymous,
+            '_render_series_list',
+            side_effect=OperationalError(1969, 'interrupted'),
+        ) as render:
+            with self.assertRaises(OperationalError):
+                self.client.get(self.url)
+            response = self.client.get(self.url)
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(render.call_count, 1)
+
+    def test_copy_from_another_release_is_ignored(self):
+        """A copy cached by a release that stored it differently is not read.
+
+        A shared cache outlives an upgrade, and what it holds must not break
+        the listing until it expires.
+        """
+        series = self._series([self.state])
+        cache.set('anon-series-list:%d' % self.project.id, b'<html></html>')
+
+        response = self.client.get(self.url)
+
+        self.assertContains(response, series.get_absolute_url())
 
     def test_cacheable_by_a_shared_cache(self):
         self._series([self.state])

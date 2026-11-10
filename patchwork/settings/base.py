@@ -301,9 +301,9 @@ PATCHWORK_BUILD_VERSION = ''
 # or pagination, so this is also its worst case.
 ANONYMOUS_LIST_MAX_SERIES = 50
 
-# How long, in seconds, to cache that listing for. Every project shares a
-# single cache entry, so the worst case is one render per project per
-# interval. See the note on caching in the deployment documentation.
+# How long, in seconds, to cache that listing for. Each project has a single
+# cache entry, so the worst case is one render per project per interval. See
+# the note on caching in the deployment documentation.
 ANONYMOUS_LIST_CACHE_TIMEOUT = 300
 
 # Format string used to build a mailing list archive URL for a message ID

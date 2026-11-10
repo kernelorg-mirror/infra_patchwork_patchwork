@@ -15,6 +15,8 @@ limited view agrees on what "metadata only" means, and so that the query
 budgets asserted in the tests cover all of them.
 """
 
+import time
+
 from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
@@ -150,6 +152,27 @@ def _render_series_list(request, project):
     )
 
 
+# Long enough for a render to finish even when the database is slow, short
+# enough that a render which failed is retried before long.
+_RENDER_LOCK_TIMEOUT = 60
+
+
+# How long a client is asked to wait when there is no copy to give it yet.
+# A first render normally takes a second or two.
+_FIRST_RENDER_RETRY_AFTER = 5
+
+
+# Keyed on the project id, not the linkname: linknames run to 255 characters,
+# and memcached keys stop at 250. The version changes whenever the shape of
+# the entry does, since a shared cache outlives an upgrade.
+def _listing_key(project):
+    return 'anon-series-list:v2:%d' % project.id
+
+
+def _lock_key(project):
+    return 'anon-series-list-lock:%d' % project.id
+
+
 def series_list(request, project):
     """Serve the limited, cacheable listing for a project.
 
@@ -176,17 +199,46 @@ def series_list(request, project):
         response['Cache-Control'] = 'no-store'
         return response
 
-    # keyed on the project id, not the linkname: linknames run to 255
-    # characters, and memcached keys stop at 250
-    key = 'anon-series-list:%d' % project.id
-    body = cache.get(key)
-    if body is None:
+    timeout = settings.ANONYMOUS_LIST_CACHE_TIMEOUT
+    now = time.time()
+    entry = cache.get(_listing_key(project))
+
+    if entry is not None and entry['fresh_until'] > now:
+        body, max_age = entry['body'], entry['fresh_until'] - now
+    elif cache.add(_lock_key(project), True, _RENDER_LOCK_TIMEOUT):
+        # The lock makes us the one worker that renders. If the render
+        # fails, the lock stays until it expires, so the others keep to
+        # what they have in the meantime instead of all retrying against a
+        # database that is already struggling.
         body = _render_series_list(request, project).content
-        cache.set(key, body, settings.ANONYMOUS_LIST_CACHE_TIMEOUT)
+        # kept for a second interval, as the copy to serve while it is
+        # being replaced
+        cache.set(
+            _listing_key(project),
+            {'body': body, 'fresh_until': now + timeout},
+            timeout * 2,
+        )
+        cache.delete(_lock_key(project))
+        max_age = timeout
+    elif entry is not None:
+        # someone else is rendering a fresh copy; this one is already stale,
+        # so nothing downstream should hold on to it
+        body, max_age = entry['body'], 0
+    else:
+        # Someone else is rendering and there is no copy to serve: the
+        # project's first render, or one that has been failing for longer
+        # than a stale copy is kept. Joining in would run the query once
+        # per waiting request, exactly when it is slowest.
+        response = HttpResponse(
+            'This page is being prepared. Please retry shortly.',
+            status=503,
+            content_type='text/plain',
+        )
+        response['Retry-After'] = str(_FIRST_RENDER_RETRY_AFTER)
+        response['Cache-Control'] = 'no-store'
+        return response
 
     response = HttpResponse(body)
-    response['Cache-Control'] = 'public, max-age=%d' % (
-        settings.ANONYMOUS_LIST_CACHE_TIMEOUT
-    )
+    response['Cache-Control'] = 'public, max-age=%d' % max_age
 
     return response

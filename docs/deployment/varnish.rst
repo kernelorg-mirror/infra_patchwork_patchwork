@@ -92,13 +92,13 @@ a shared frontend that relies on some other cookie for anonymous visitors
 that too. Narrow the ``unset`` to just the session cookie if you need to
 keep others around, at the cost of a less effective cache key.
 
-**Two independent staleness windows.** ``ANONYMOUS_LIST_CACHE_TIMEOUT``
-controls how stale Patchwork's own cache entry may be; the ``max-age`` on
-the response is set from that same value, so Varnish's TTL should already
-match it. If you add VCL that unconditionally overrides ``beresp.ttl``,
-you can end up with Varnish serving a page well past the staleness window
-the page itself claims to have. Let the backend's own ``Cache-Control``
-drive the TTL rather than hardcoding one.
+**Let the backend set the TTL.** ``ANONYMOUS_LIST_CACHE_TIMEOUT`` controls
+how stale Patchwork's own cache entry may be, and the ``max-age`` on the
+response is however long that entry has left, so the two never add up. If
+you add VCL that unconditionally overrides ``beresp.ttl``, you can end up
+with Varnish serving a page well past the staleness window the page itself
+claims to have. Let the backend's own ``Cache-Control`` drive the TTL rather
+than hardcoding one.
 
 **Redirects to the login page are cacheable, and that's fine.** Once
 ``GATE_ANONYMOUS_ACCESS`` gates a URL, an anonymous request gets a ``302``
