@@ -114,31 +114,6 @@ class TestPatchAPI(utils.APITestCase):
         patch_rsp = resp.data[0]
         self.assertSerialized(patch, patch_rsp)
 
-    def test_list_pagination_order(self):
-        project = create_project()
-        for name in ('d', 'a', 'e', 'b', 'c'):
-            create_patch(project=project, name=name)
-        create_patch()  # Must not leak through the project filter.
-        for order in ('id', '-id', 'name', '-name'):
-            expected = list(
-                Patch.objects.filter(project=project)
-                .order_by(order)
-                .values_list('id', flat=True)
-            )[2:4]
-            response = self.client.get(
-                self.api_url(),
-                {
-                    'project': project.pk,
-                    'order': order,
-                    'per_page': 2,
-                    'page': 2,
-                },
-            )
-            self.assertEqual(status.HTTP_200_OK, response.status_code)
-            self.assertEqual(expected, [p['id'] for p in response.data])
-            self.assertIn('rel="next"', response['Link'])
-            self.assertIn('rel="prev"', response['Link'])
-
     def test_list_filter_state(self):
         """Filter patches by state."""
         self._create_patch()

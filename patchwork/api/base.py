@@ -94,6 +94,25 @@ class LinkHeaderPagination(PageNumberPagination):
         return Response(data, headers=headers)
 
 
+class IDPagination(LinkHeaderPagination):
+    """Page over IDs, then fetch the full rows for that page only.
+
+    With a plain offset, a deep page makes the database build every joined
+    row before the offset just to throw it away, which is what crawlers
+    reaching far into a large list end up doing. Paging over the primary key
+    alone is cheap, and the joins then only run for the rows returned.
+    """
+
+    def paginate_queryset(self, queryset, request, view=None):
+        ids = super().paginate_queryset(
+            queryset.values_list('pk', flat=True), request, view=view
+        )
+        if ids is None:
+            return None
+        objs = {obj.pk: obj for obj in queryset.filter(pk__in=ids).order_by()}
+        return [objs[pk] for pk in ids if pk in objs]
+
+
 class PatchworkPermission(permissions.BasePermission):
     """
     This permission works for Project, Patch, PatchComment

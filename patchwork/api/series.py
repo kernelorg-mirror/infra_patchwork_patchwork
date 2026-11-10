@@ -12,6 +12,7 @@ from rest_framework.serializers import (
 )
 
 from patchwork.api.base import BaseHyperlinkedModelSerializer
+from patchwork.api.base import IDPagination
 from patchwork.api.base import PatchworkPermission
 from patchwork.api.filters import SeriesFilterSet
 from patchwork.api.embedded import CoverSerializer
@@ -121,6 +122,7 @@ class SeriesList(SeriesMixin, ListAPIView):
     """List series."""
 
     filter_class = filterset_class = SeriesFilterSet
+    pagination_class = IDPagination
     search_fields = ('name',)
     scope_params = ('project',)
     unscoped_ordering = ('id',)
