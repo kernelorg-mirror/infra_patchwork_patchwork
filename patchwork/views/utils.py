@@ -11,10 +11,13 @@ from email.header import Header
 from email.mime.nonmultipart import MIMENonMultipart
 from email.parser import HeaderParser
 import email.utils
+import functools
 import re
 
 from django.conf import settings
 from django.http import Http404
+from django.utils.cache import patch_cache_control
+from django.views.decorators.http import conditional_page
 
 from patchwork.models import CoverComment
 from patchwork.models import Patch
@@ -23,6 +26,44 @@ from patchwork.parser import split_from_header
 
 if settings.ENABLE_REST_API:
     from rest_framework.authtoken.models import Token
+
+
+def cacheable_download(max_age=None):
+    """Let clients and caches revalidate a download rather than refetch it.
+
+    The ETag is computed from the content, so it costs a render but saves
+    sending it again. Without a max_age, caches must revalidate every time,
+    which is right for anything that changes as replies come in.
+
+    Only anonymous responses are public: the content is the same for
+    everyone, but a shared cache must never hand a logged-in user's response
+    to someone an instance gates downloads from.
+    """
+
+    def decorator(view):
+        @functools.wraps(view)
+        @conditional_page
+        def wrapper(request, *args, **kwargs):
+            response = view(request, *args, **kwargs)
+            if response.status_code != 200:
+                return response
+
+            # patch_cache_control() writes out False values as 'public=False'
+            # rather than leaving them out, so pass only what applies
+            if request.user.is_authenticated:
+                directives = {'private': True}
+            else:
+                directives = {'public': True}
+            if max_age is None:
+                directives['no_cache'] = True
+            else:
+                directives['max_age'] = max_age
+            patch_cache_control(response, **directives)
+            return response
+
+        return wrapper
+
+    return decorator
 
 
 class PatchMbox(MIMENonMultipart):

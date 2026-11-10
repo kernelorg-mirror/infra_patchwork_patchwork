@@ -1,0 +1,9 @@
+---
+features:
+  - |
+    Patch, cover letter and series downloads (``/raw/`` and ``/mbox/``) now
+    carry an ``ETag``, so clients and caches can revalidate them and get an
+    empty ``304 Not Modified`` when nothing changed. They also carry a
+    ``Cache-Control`` header: raw diffs may be kept for a day, while mbox
+    files, which change as replies add tags, must be revalidated every time.
+    Responses are only marked ``public`` for anonymous requests.
