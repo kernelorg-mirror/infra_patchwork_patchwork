@@ -1,0 +1,9 @@
+---
+api:
+  - |
+    The REST API version is now 1.5.
+  - |
+    Patches embedded in other resources - the patches of a series or bundle,
+    the patch of an event and the related patches of a patch - now include
+    their ``state``, as the patch's state slug. Clients following a series no
+    longer need to fetch each of its patches just to learn their state.

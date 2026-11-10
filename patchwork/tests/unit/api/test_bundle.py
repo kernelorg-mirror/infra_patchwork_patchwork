@@ -146,8 +146,9 @@ class TestBundleAPI(utils.APITestCase):
             bundle = create_bundle(public=True)
             bundle.append_patch(create_patch(project=bundle.project))
 
-        # count, bundles, their patches and those patches' projects
-        with self.assertNumQueries(4):
+        # count, bundles, their patches, and those patches' projects and
+        # (since v1.5) states
+        with self.assertNumQueries(5):
             self.client.get(self.api_url())
 
     def test_detail_anonymous_public(self):

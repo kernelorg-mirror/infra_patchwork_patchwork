@@ -156,6 +156,8 @@ class EventList(ListAPIView):
         # This goes against our pledge to version events in the docs but must
         # be done.
         # TODO(stephenfin): Make this more generic.
+        if utils.has_version(self.request, '1.5'):
+            events = events.prefetch_related('patch__state')
         if utils.has_version(self.request, '1.3'):
             events = events.prefetch_related(
                 'cover_comment',

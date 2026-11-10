@@ -2995,6 +2995,14 @@ components:
           type: string
           format: uri
           readOnly: true
+{% if version >= (1, 5) %}
+        state:
+          title: State
+          type:
+            - 'null'
+            - 'string'
+          readOnly: true
+{% endif %}
     PersonEmbedded:
       type: object
       title: Person

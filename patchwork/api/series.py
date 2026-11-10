@@ -105,9 +105,11 @@ class SeriesMixin(object):
             .prefetch_related(
                 Prefetch(
                     'patches',
-                    queryset=Patch.objects.defer(
-                        'content', 'diff', 'headers'
-                    ).prefetch_related('project'),
+                    # a join for the state, which embedded patches show
+                    # since v1.5, rather than a query per patch
+                    queryset=Patch.objects.defer('content', 'diff', 'headers')
+                    .select_related('state')
+                    .prefetch_related('project'),
                 ),
                 'cover_letter__project',
                 'dependencies',

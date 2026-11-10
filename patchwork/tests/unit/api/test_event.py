@@ -190,7 +190,7 @@ class TestEventAPI(utils.APITestCase):
         for _ in range(3):
             self._create_events()
 
-        with self.assertNumQueries(30):
+        with self.assertNumQueries(31):
             self.client.get(self.api_url())
 
     def test_order_by_date_default(self):

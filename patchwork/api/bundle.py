@@ -141,13 +141,16 @@ class BundleMixin(object):
         else:
             bundle_filter = Q(public=True)
 
-        return (
+        bundles = (
             Bundle.objects.filter(bundle_filter)
             .prefetch_related(
                 'patches__project',
             )
             .select_related('owner', 'project')
         )
+        if utils.has_version(self.request, '1.5'):
+            bundles = bundles.prefetch_related('patches__state')
+        return bundles
 
 
 class BundleList(BundleMixin, ListCreateAPIView):

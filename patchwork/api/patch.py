@@ -19,6 +19,7 @@ from rest_framework.reverse import reverse
 from rest_framework.serializers import SerializerMethodField
 from rest_framework import status
 
+from patchwork.api import utils
 from patchwork.api.base import BaseHyperlinkedModelSerializer
 from patchwork.api.base import LinkHeaderPagination
 from patchwork.api.base import PatchworkPermission
@@ -353,6 +354,13 @@ class PatchListPagination(LinkHeaderPagination):
         return [patches[pk] for pk in ids if pk in patches]
 
 
+def _prefetch_related_state(request, patches):
+    """Fetch the state of related patches, which v1.5 embeds, in one go."""
+    if utils.has_version(request, '1.5'):
+        patches = patches.prefetch_related('related__patches__state')
+    return patches
+
+
 class PatchList(ListAPIView):
     """List patches."""
 
@@ -376,7 +384,8 @@ class PatchList(ListAPIView):
     def get_queryset(self):
         # TODO(dja): we need to revisit this after the patch migration, paying
         # particular attention to cases with filtering
-        return (
+        return _prefetch_related_state(
+            self.request,
             Patch.objects.all()
             .prefetch_related(
                 'check_set',
@@ -386,7 +395,7 @@ class PatchList(ListAPIView):
                 'related__patches__project',
             )
             .select_related('state', 'submitter', 'series')
-            .defer('content', 'diff', 'headers')
+            .defer('content', 'diff', 'headers'),
         )
 
 
@@ -406,10 +415,11 @@ class PatchDetail(RetrieveUpdateAPIView):
     serializer_class = PatchDetailSerializer
 
     def get_queryset(self):
-        return (
+        return _prefetch_related_state(
+            self.request,
             Patch.objects.all()
             .prefetch_related('check_set', 'related__patches__project')
             .select_related(
                 'project', 'state', 'submitter', 'delegate', 'series'
-            )
+            ),
         )

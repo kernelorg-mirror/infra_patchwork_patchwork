@@ -16,6 +16,7 @@ from django.utils.functional import cached_property
 from rest_framework.serializers import CharField
 from rest_framework.serializers import PrimaryKeyRelatedField
 from rest_framework.serializers import SerializerMethodField
+from rest_framework.serializers import SlugRelatedField
 
 from patchwork.api.base import BaseHyperlinkedModelSerializer
 from patchwork.api.base import NestedHyperlinkedIdentityField
@@ -178,6 +179,10 @@ class CoverCommentSerializer(SerializedRelatedField):
 
 class PatchSerializer(SerializedRelatedField):
     class _Serializer(MboxMixin, WebURLMixin, BaseHyperlinkedModelSerializer):
+        # the slug, as the patch endpoints show it; there is no state
+        # endpoint to link to
+        state = SlugRelatedField(slug_field='slug', read_only=True)
+
         class Meta:
             model = models.Patch
             fields = (
@@ -191,11 +196,13 @@ class PatchSerializer(SerializedRelatedField):
                 'date',
                 'name',
                 'mbox',
+                'state',
             )
             read_only_fields = fields
             versioned_fields = {
                 '1.1': ('web_url',),
                 '1.2': ('list_archive_url',),
+                '1.5': ('state',),
             }
             extra_kwargs = {
                 'url': {'view_name': 'api-patch-detail'},
